@@ -6,13 +6,24 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
+
+import { School } from './school.entity';
 import { User } from './user.entity';
 
 @Entity('admins')
 export class Admin {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Index('idx_student_school')
+  @Column({ name: 'school_id', type: 'uuid' })
+  schoolId: string;
+
+  @ManyToOne(() => School)
+  @JoinColumn({ name: 'school_id' })
+  school: School;
 
   @Column({ name: 'user_id' })
   userId: string;

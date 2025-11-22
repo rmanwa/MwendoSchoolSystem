@@ -7,7 +7,10 @@ import {
   ManyToOne,
   JoinColumn,
   Unique,
+  Index,
 } from 'typeorm';
+
+import { School } from './school.entity';
 import { Assignment } from './assignment.entity';
 import { Student } from './student.entity';
 import { Teacher } from './teacher.entity';
@@ -17,6 +20,14 @@ import { Teacher } from './teacher.entity';
 export class Submission {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Index('idx_student_school')
+  @Column({ name: 'school_id', type: 'uuid' })
+  schoolId: string;
+
+  @ManyToOne(() => School)
+  @JoinColumn({ name: 'school_id' })
+  school: School;
 
   @Column({ name: 'assignment_id' })
   assignmentId: string;

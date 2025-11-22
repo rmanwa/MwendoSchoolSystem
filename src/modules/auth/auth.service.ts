@@ -168,7 +168,7 @@ export class AuthService {
     }
 
     user.failedLoginAttempts = 0;
-    user.lockedUntil = undefined;
+    user.lockedUntil = null;
     user.lastLogin = new Date();
 
     const payload = { sub: user.id, email: user.email, role: user.role };
@@ -178,7 +178,7 @@ export class AuthService {
     
     const refreshToken = this.jwtService.sign(payload, {
       secret: refreshSecret,
-      expiresIn: refreshExpiresIn,
+      expiresIn: refreshExpiresIn as any,
     });
 
     user.refreshToken = await bcrypt.hash(refreshToken, 10);
@@ -221,7 +221,7 @@ export class AuthService {
       
       const newRefreshToken = this.jwtService.sign(newPayload, {
         secret: refreshSecret,
-        expiresIn: refreshExpiresIn,
+        expiresIn: refreshExpiresIn as any,
       });
 
       user.refreshToken = await bcrypt.hash(newRefreshToken, 10);
@@ -240,7 +240,7 @@ export class AuthService {
     const user = await this.userRepository.findOne({ where: { id: userId } });
 
     if (user) {
-      user.refreshToken = undefined;
+      user.refreshToken = null;
       await this.userRepository.save(user);
     }
 
@@ -285,9 +285,9 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     user.password = hashedPassword;
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
-    user.refreshToken = undefined;
+    user.passwordResetToken = null;
+    user.passwordResetExpires = null;
+    user.refreshToken = null;
 
     await this.userRepository.save(user);
 
@@ -315,7 +315,7 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     user.password = hashedPassword;
-    user.refreshToken = undefined;
+    user.refreshToken = null;
 
     await this.userRepository.save(user);
 
@@ -332,7 +332,7 @@ export class AuthService {
     }
 
     user.isEmailVerified = true;
-    user.emailVerificationToken = undefined;
+    user.emailVerificationToken = null;
 
     await this.userRepository.save(user);
 

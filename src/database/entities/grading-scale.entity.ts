@@ -4,12 +4,24 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  Index,
+  JoinColumn,
 } from 'typeorm';
+import { School } from './school.entity';
 
 @Entity('grading_scales')
 export class GradingScale {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Index('idx_student_school')
+  @Column({ name: 'school_id', type: 'uuid' })
+  schoolId: string;
+
+  @ManyToOne(() => School)
+  @JoinColumn({ name: 'school_id' })
+  school: School;
 
   @Column()
   name: string;

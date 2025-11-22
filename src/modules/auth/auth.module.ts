@@ -21,7 +21,7 @@ import { Admin } from '../../database/entities/admin.entity';
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('jwt.secret') || 'default-secret-key',
         signOptions: {
-          expiresIn: configService.get<string>('jwt.expiresIn') || '1d',
+          expiresIn: configService.get<string>('jwt.expiresIn') as any || '1d',
         },
       }),
       inject: [ConfigService],

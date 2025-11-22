@@ -9,6 +9,8 @@ import {
   Unique,
   Index,
 } from 'typeorm';
+
+import { School } from './school.entity';
 import { Student } from './student.entity';
 import { Class } from './class.entity';
 import { Subject } from './subject.entity';
@@ -21,6 +23,14 @@ import { Term } from './term.entity';
 export class Attendance {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Index('idx_student_school')
+  @Column({ name: 'school_id', type: 'uuid' })
+  schoolId: string;
+
+  @ManyToOne(() => School)
+  @JoinColumn({ name: 'school_id' })
+  school: School;
 
   @Index()
   @Column({ name: 'student_id' })

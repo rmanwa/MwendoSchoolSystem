@@ -6,13 +6,25 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
+
+import { School } from './school.entity';
 import { AcademicYear } from './academic-year.entity';
 
 @Entity('classes')
 export class Class {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  // Multi-tenant: School relationship
+  @Index('idx_student_school')
+  @Column({ name: 'school_id', type: 'uuid' })
+  schoolId: string;
+
+  @ManyToOne(() => School)
+  @JoinColumn({ name: 'school_id' })
+  school: School;
 
   @Column()
   name: string;

@@ -6,13 +6,24 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   Index,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Role } from '../../common/constants/roles.constant';
+import { School } from './school.entity';
 
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  // Multi-Tenancy: Link to School
+  @Column({ name: 'school_id', nullable: true })
+  schoolId: string | null;
+
+  @ManyToOne(() => School, (school) => school.users)
+  @JoinColumn({ name: 'school_id' })
+  school: School;
 
   @Index()
   @Column({ unique: true })
@@ -20,7 +31,7 @@ export class User {
 
   @Index()
   @Column({ unique: true, nullable: true })
-  phone: string;
+  phone: string | null;
 
   @Column()
   password: string;
@@ -32,7 +43,7 @@ export class User {
   lastName: string;
 
   @Column({ name: 'middle_name', nullable: true })
-  middleName: string;
+  middleName: string | null;
 
   @Column({
     type: 'enum',
@@ -42,7 +53,7 @@ export class User {
   role: Role;
 
   @Column({ nullable: true })
-  avatar: string;
+  avatar: string | null;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
@@ -53,29 +64,31 @@ export class User {
   @Column({ name: 'is_phone_verified', default: false })
   isPhoneVerified: boolean;
 
+  // --- FIX: Added '| null' to all nullable fields below ---
+
   @Column({ name: 'email_verification_token', nullable: true })
-  emailVerificationToken: string;
+  emailVerificationToken: string | null;
 
   @Column({ name: 'phone_verification_code', nullable: true })
-  phoneVerificationCode: string;
+  phoneVerificationCode: string | null;
 
   @Column({ name: 'password_reset_token', nullable: true })
-  passwordResetToken: string;
+  passwordResetToken: string | null;
 
   @Column({ name: 'password_reset_expires', type: 'timestamp', nullable: true })
-  passwordResetExpires: Date;
+  passwordResetExpires: Date | null;
 
   @Column({ name: 'refresh_token', nullable: true })
-  refreshToken: string;
+  refreshToken: string | null;
 
   @Column({ name: 'last_login', type: 'timestamp', nullable: true })
-  lastLogin: Date;
+  lastLogin: Date | null;
 
   @Column({ name: 'failed_login_attempts', default: 0 })
   failedLoginAttempts: number;
 
   @Column({ name: 'locked_until', type: 'timestamp', nullable: true })
-  lockedUntil: Date;
+  lockedUntil: Date | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

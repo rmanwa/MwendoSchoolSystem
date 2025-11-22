@@ -8,7 +8,10 @@ import {
   ManyToMany,
   JoinTable,
   JoinColumn,
+  Index,
 } from 'typeorm';
+
+import { School } from './school.entity';
 import { User } from './user.entity';
 import { Student } from './student.entity';
 
@@ -16,6 +19,14 @@ import { Student } from './student.entity';
 export class Parent {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Index('idx_student_school')
+  @Column({ name: 'school_id', type: 'uuid' })
+  schoolId: string;
+
+  @ManyToOne(() => School)
+  @JoinColumn({ name: 'school_id' })
+  school: School;
 
   @Column({ name: 'user_id' })
   userId: string;

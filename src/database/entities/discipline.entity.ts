@@ -6,7 +6,10 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
+
+import { School } from './school.entity';
 import { Student } from './student.entity';
 import { Teacher } from './teacher.entity';
 import { AcademicYear } from './academic-year.entity';
@@ -16,6 +19,14 @@ import { Term } from './term.entity';
 export class DisciplineRecord {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Index('idx_student_school')
+  @Column({ name: 'school_id', type: 'uuid' })
+  schoolId: string;
+
+  @ManyToOne(() => School)
+  @JoinColumn({ name: 'school_id' })
+  school: School;
 
   @Column({ name: 'student_id' })
   studentId: string;

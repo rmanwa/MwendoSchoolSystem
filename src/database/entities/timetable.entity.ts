@@ -7,7 +7,9 @@ import {
   ManyToOne,
   JoinColumn,
   Unique,
+  Index,
 } from 'typeorm';
+import { School } from './school.entity';
 import { Class } from './class.entity';
 import { Subject } from './subject.entity';
 import { Teacher } from './teacher.entity';
@@ -18,6 +20,14 @@ import { AcademicYear } from './academic-year.entity';
 export class Timetable {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Index('idx_student_school')
+  @Column({ name: 'school_id', type: 'uuid' })
+  schoolId: string;
+
+  @ManyToOne(() => School)
+  @JoinColumn({ name: 'school_id' })
+  school: School;
 
   @Column({ name: 'class_id' })
   classId: string;
