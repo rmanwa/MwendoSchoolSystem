@@ -17,7 +17,7 @@ export class Event {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('idx_student_school')
+  @Index('idx_event_school')
   @Column({ name: 'school_id', type: 'uuid' })
   schoolId: string;
 

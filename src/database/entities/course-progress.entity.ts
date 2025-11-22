@@ -20,7 +20,7 @@ export class CourseProgress {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('idx_student_school')
+  @Index('idx_course-progress_school')
   @Column({ name: 'school_id', type: 'uuid' })
   schoolId: string;
 

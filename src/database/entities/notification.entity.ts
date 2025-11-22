@@ -18,7 +18,7 @@ export class Notification {
   id: string;
 
   // Multi-tenant: School relationship
-  @Index('idx_student_school')
+  @Index('idx_notification_school')
   @Column({ name: 'school_id', type: 'uuid' })
   schoolId: string;
 

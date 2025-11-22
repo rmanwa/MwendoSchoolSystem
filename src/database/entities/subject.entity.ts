@@ -15,7 +15,7 @@ export class Subject {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('idx_student_school')
+  @Index('idx_subject_school')
   @Column({ name: 'school_id', type: 'uuid' })
   schoolId: string;
 

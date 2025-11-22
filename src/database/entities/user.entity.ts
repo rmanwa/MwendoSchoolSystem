@@ -17,8 +17,8 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // Multi-Tenancy: Link to School
-  @Column({ name: 'school_id', nullable: true })
+  // FIX 1: Explicitly set type: 'uuid'
+  @Column({ name: 'school_id', type: 'uuid', nullable: true })
   schoolId: string | null;
 
   @ManyToOne(() => School, (school) => school.users)
@@ -29,8 +29,9 @@ export class User {
   @Column({ unique: true })
   email: string;
 
+  // FIX 2: Explicitly set type: 'varchar'
   @Index()
-  @Column({ unique: true, nullable: true })
+  @Column({ unique: true, nullable: true, type: 'varchar' })
   phone: string | null;
 
   @Column()
@@ -42,7 +43,8 @@ export class User {
   @Column({ name: 'last_name' })
   lastName: string;
 
-  @Column({ name: 'middle_name', nullable: true })
+  // FIX 3: Explicitly set type: 'varchar'
+  @Column({ name: 'middle_name', nullable: true, type: 'varchar' })
   middleName: string | null;
 
   @Column({
@@ -52,7 +54,8 @@ export class User {
   })
   role: Role;
 
-  @Column({ nullable: true })
+  // FIX 4: Explicitly set type: 'varchar'
+  @Column({ nullable: true, type: 'varchar' })
   avatar: string | null;
 
   @Column({ name: 'is_active', default: true })
@@ -64,21 +67,21 @@ export class User {
   @Column({ name: 'is_phone_verified', default: false })
   isPhoneVerified: boolean;
 
-  // --- FIX: Added '| null' to all nullable fields below ---
-
-  @Column({ name: 'email_verification_token', nullable: true })
+  // FIX 5: Explicitly set type: 'varchar' for all tokens
+  @Column({ name: 'email_verification_token', nullable: true, type: 'varchar' })
   emailVerificationToken: string | null;
 
-  @Column({ name: 'phone_verification_code', nullable: true })
+  @Column({ name: 'phone_verification_code', nullable: true, type: 'varchar' })
   phoneVerificationCode: string | null;
 
-  @Column({ name: 'password_reset_token', nullable: true })
+  @Column({ name: 'password_reset_token', nullable: true, type: 'varchar' })
   passwordResetToken: string | null;
 
+  // Timestamps usually work fine, but ensuring they are explicit doesn't hurt
   @Column({ name: 'password_reset_expires', type: 'timestamp', nullable: true })
   passwordResetExpires: Date | null;
 
-  @Column({ name: 'refresh_token', nullable: true })
+  @Column({ name: 'refresh_token', nullable: true, type: 'varchar' })
   refreshToken: string | null;
 
   @Column({ name: 'last_login', type: 'timestamp', nullable: true })

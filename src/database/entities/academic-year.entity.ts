@@ -15,8 +15,8 @@ export class AcademicYear {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('idx_student_school')
-  @Column({ name: 'school_id', type: 'uuid' })
+  @Index('idx_academic-year_school')
+  @Column({ name: 'school_id', type: 'uuid', nullable: true })
   schoolId: string;
 
   @ManyToOne(() => School)

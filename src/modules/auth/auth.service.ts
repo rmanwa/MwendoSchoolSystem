@@ -16,6 +16,7 @@ import { Student } from '../../database/entities/student.entity';
 import { Teacher } from '../../database/entities/teacher.entity';
 import { Parent } from '../../database/entities/parent.entity';
 import { Admin } from '../../database/entities/admin.entity';
+import { School } from '../../database/entities/school.entity';
 import { Role } from '../../common/constants/roles.constant';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -36,11 +37,13 @@ export class AuthService {
     private parentRepository: Repository<Parent>,
     @InjectRepository(Admin)
     private adminRepository: Repository<Admin>,
+    @InjectRepository(School)
+    private schoolRepository: Repository<School>,
     private jwtService: JwtService,
     private configService: ConfigService,
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<{ message: string; user: Partial<User> }> {
+  async register(registerDto: RegisterDto, schoolId?: string): Promise<{ message: string; user: Partial<User> }> {
     const { email, phone, password, firstName, lastName, middleName, role } = registerDto;
 
     const existingEmail = await this.userRepository.findOne({ where: { email } });
@@ -52,6 +55,15 @@ export class AuthService {
       const existingPhone = await this.userRepository.findOne({ where: { phone } });
       if (existingPhone) {
         throw new ConflictException('Phone number already registered');
+      }
+    }
+
+    // Validate School
+    let school: School | null = null;
+    if (schoolId) {
+      school = await this.schoolRepository.findOne({ where: { id: schoolId } });
+      if (!school) {
+        throw new NotFoundException('School not found');
       }
     }
 
@@ -69,6 +81,8 @@ export class AuthService {
       isActive: true,
       isEmailVerified: false,
       emailVerificationToken: uuidv4(),
+      school: school!, // Link user to school
+      schoolId: school?.id || null,
     });
 
     await this.userRepository.save(user);
@@ -83,10 +97,15 @@ export class AuthService {
   }
 
   private async createRoleProfile(user: User, registerDto: RegisterDto): Promise<void> {
+    const commonFields = {
+      userId: user.id,
+      schoolId: user.schoolId!, // Assuming schoolId is mandatory for profiles now
+    };
+
     switch (user.role) {
       case Role.STUDENT:
         const student = this.studentRepository.create({
-          userId: user.id,
+          ...commonFields,
           admissionNumber: registerDto.admissionNumber || `ADM${Date.now()}`,
           dateOfBirth: registerDto.dateOfBirth || new Date('2010-01-01'),
           gender: registerDto.gender || 'other',
@@ -171,7 +190,13 @@ export class AuthService {
     user.lockedUntil = null;
     user.lastLogin = new Date();
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
+    const payload = { 
+      sub: user.id, 
+      email: user.email, 
+      role: user.role,
+      schoolId: user.schoolId 
+    };
+    
     const accessToken = this.jwtService.sign(payload);
     const refreshSecret = this.configService.get<string>('jwt.refreshSecret') || 'default-refresh-secret';
     const refreshExpiresIn = this.configService.get<string>('jwt.refreshExpiresIn') || '7d';
@@ -215,7 +240,13 @@ export class AuthService {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      const newPayload = { sub: user.id, email: user.email, role: user.role };
+      const newPayload = { 
+        sub: user.id, 
+        email: user.email, 
+        role: user.role,
+        schoolId: user.schoolId 
+      };
+      
       const newAccessToken = this.jwtService.sign(newPayload);
       const refreshExpiresIn = this.configService.get<string>('jwt.refreshExpiresIn') || '7d';
       
@@ -262,6 +293,7 @@ export class AuthService {
 
     await this.userRepository.save(user);
 
+    // In production, send email here
     console.log(`Password reset token for ${email}: ${resetToken}`);
 
     return { message: 'If the email exists, a password reset link has been sent.' };

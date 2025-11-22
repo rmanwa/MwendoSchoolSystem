@@ -23,7 +23,7 @@ export class Grade {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('idx_student_school')
+  @Index('idx_grade_school')
   @Column({ name: 'school_id', type: 'uuid' })
   schoolId: string;
 

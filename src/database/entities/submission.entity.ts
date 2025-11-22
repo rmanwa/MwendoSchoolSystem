@@ -21,7 +21,7 @@ export class Submission {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('idx_student_school')
+  @Index('idx_submission_school')
   @Column({ name: 'school_id', type: 'uuid' })
   schoolId: string;
 

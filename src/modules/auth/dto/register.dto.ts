@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsPhoneNumber,
   IsDateString,
+  IsUUID, // <--- ADDED THIS IMPORT
 } from 'class-validator';
 import { Role } from '../../../common/constants/roles.constant';
 
@@ -74,4 +75,9 @@ export class RegisterDto {
   @IsOptional()
   @IsString()
   relationship?: string;
+
+  @ApiPropertyOptional({ example: 'uuid-of-school' })
+  @IsOptional()
+  @IsUUID()
+  schoolId?: string;
 }

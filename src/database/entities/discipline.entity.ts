@@ -20,7 +20,7 @@ export class DisciplineRecord {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('idx_student_school')
+  @Index('idx_discipline_school')
   @Column({ name: 'school_id', type: 'uuid' })
   schoolId: string;
 
@@ -37,7 +37,14 @@ export class DisciplineRecord {
 
   @Column({
     type: 'enum',
-    enum: ['incident', 'warning', 'suspension', 'expulsion', 'reward', 'achievement'],
+    enum: [
+      'incident',
+      'warning',
+      'suspension',
+      'expulsion',
+      'reward',
+      'achievement',
+    ],
   })
   type: string;
 

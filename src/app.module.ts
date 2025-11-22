@@ -1,16 +1,21 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import configs from './config';
 import { AuthModule } from './modules/auth/auth.module';
+import { TenantMiddleware } from './common/middleware/tenant.middleware';
+import { School } from './database/entities/school.entity';
 
 @Module({
   imports: [
+    // 1. Load Environment Variables
     ConfigModule.forRoot({
       isGlobal: true,
       load: configs,
       envFilePath: '.env',
     }),
+
+    // 2. Global Database Connection
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -26,9 +31,27 @@ import { AuthModule } from './modules/auth/auth.module';
       }),
       inject: [ConfigService],
     }),
+
+    // 3. Register School Entity for Middleware Usage (Critical!)
+    // This MUST be in imports, NOT inside forRootAsync
+    TypeOrmModule.forFeature([School]),
+
+    // 4. Import Feature Modules
     AuthModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  // 5. Configure Multi-Tenant Middleware
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(TenantMiddleware)
+      .exclude(
+        'auth/(.*)', // Exclude login/register
+        'health',     // Exclude health checks
+        '/'           // Exclude root
+      ) 
+      .forRoutes('*'); // Apply to all other routes
+  }
+}

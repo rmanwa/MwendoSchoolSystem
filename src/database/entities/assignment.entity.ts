@@ -21,7 +21,7 @@ export class Assignment {
   id: string;
 
   // Multi-tenant: School relationship
-  @Index('idx_student_school')
+  @Index('idx_assignment_school')
   @Column({ name: 'school_id', type: 'uuid' })
   schoolId: string;
 

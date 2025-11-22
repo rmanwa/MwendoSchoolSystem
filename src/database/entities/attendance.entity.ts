@@ -24,7 +24,7 @@ export class Attendance {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('idx_student_school')
+  @Index('idx_attendance_school')
   @Column({ name: 'school_id', type: 'uuid' })
   schoolId: string;
 

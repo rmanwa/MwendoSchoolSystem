@@ -18,7 +18,7 @@ export class QuizAttempt {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('idx_student_school')
+  @Index('idx_quiz-attempt_school')
   @Column({ name: 'school_id', type: 'uuid' })
   schoolId: string;
   @ManyToOne(() => School)

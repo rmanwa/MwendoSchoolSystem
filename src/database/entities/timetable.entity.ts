@@ -21,7 +21,7 @@ export class Timetable {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('idx_student_school')
+  @Index('idx_timetable_school')
   @Column({ name: 'school_id', type: 'uuid' })
   schoolId: string;
 

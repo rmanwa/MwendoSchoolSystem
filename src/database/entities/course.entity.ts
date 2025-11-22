@@ -19,7 +19,7 @@ export class Course {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('idx_student_school')
+  @Index('idx_course_school')
   @Column({ name: 'school_id', type: 'uuid' })
   schoolId: string;
 

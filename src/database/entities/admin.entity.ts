@@ -17,7 +17,7 @@ export class Admin {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index('idx_student_school')
+  @Index('idx_admin_school')
   @Column({ name: 'school_id', type: 'uuid' })
   schoolId: string;
 
