@@ -22,7 +22,7 @@ export class Assignment {
 
   // Multi-tenant: School relationship
   @Index('idx_assignment_school')
-  @Column({ name: 'school_id', type: 'uuid' })
+  @Column({ name: 'school_id', type: 'uuid', nullable: true })
   schoolId: string;
 
   @ManyToOne(() => School)

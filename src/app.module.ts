@@ -1,3 +1,4 @@
+import { StudentsModule } from './modules/students/students.module';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -38,6 +39,7 @@ import { School } from './database/entities/school.entity';
 
     // 4. Import Feature Modules
     AuthModule,
+    StudentsModule,
   ],
   controllers: [],
   providers: [],

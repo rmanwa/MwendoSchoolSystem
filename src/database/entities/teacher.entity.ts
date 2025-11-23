@@ -20,7 +20,7 @@ export class Teacher {
   // Multi-tenant: School relationship
   @Index('idx_teacher_school')
   @Column({ name: 'school_id', type: 'uuid', nullable: true })
-  schoolId: string;
+  schoolId: string | null;
 
   @ManyToOne(() => School)
   @JoinColumn({ name: 'school_id' })

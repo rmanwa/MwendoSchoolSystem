@@ -18,12 +18,12 @@ export class Admin {
   id: string;
 
   @Index('idx_admin_school')
-  @Column({ name: 'school_id', type: 'uuid' })
-  schoolId: string;
+  @Column({ name: 'school_id', type: 'uuid', nullable: true })
+  schoolId: string | null;
 
-  @ManyToOne(() => School)
+  @ManyToOne(() => School, { nullable: true })
   @JoinColumn({ name: 'school_id' })
-  school: School;
+  school: School | null;
 
   @Column({ name: 'user_id' })
   userId: string;

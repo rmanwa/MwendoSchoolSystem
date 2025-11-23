@@ -1,36 +1,36 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const configService = app.get(ConfigService);
 
-  const apiPrefix = configService.get<string>('app.apiPrefix') || 'api/v1';
-  app.setGlobalPrefix(apiPrefix);
-
+  // Enable CORS
   app.enableCors({
-    origin: configService.get<string>('app.frontendUrl') || 'http://localhost:3001',
+    origin: true,
     credentials: true,
   });
 
+  // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
     }),
   );
 
+  // API prefix
+  app.setGlobalPrefix('api/v1');
+
+  // Swagger configuration
   const config = new DocumentBuilder()
-    .setTitle('School Management System API')
-    .setDescription('Complete API documentation for the School Management System')
+    .setTitle('School Management API')
+    .setDescription('Multi-tenant School Management System API')
     .setVersion('1.0')
+    .addTag('Auth', 'Authentication endpoints')
+    .addTag('Students', 'Student management endpoints')
     .addBearerAuth(
       {
         type: 'http',
@@ -40,41 +40,16 @@ async function bootstrap() {
         description: 'Enter JWT token',
         in: 'header',
       },
-      'JWT-auth',
+      'JWT-auth', // This name must match what we use in controllers
     )
-    .addTag('Auth', 'Authentication endpoints')
-    .addTag('Users', 'User management endpoints')
-    .addTag('Students', 'Student management endpoints')
-    .addTag('Teachers', 'Teacher management endpoints')
-    .addTag('Parents', 'Parent management endpoints')
-    .addTag('Classes', 'Class management endpoints')
-    .addTag('Subjects', 'Subject management endpoints')
-    .addTag('Timetable', 'Timetable management endpoints')
-    .addTag('Assignments', 'Assignment management endpoints')
-    .addTag('Attendance', 'Attendance management endpoints')
-    .addTag('Grades', 'Grade management endpoints')
-    .addTag('Report Cards', 'Report card endpoints')
-    .addTag('Discipline', 'Discipline tracking endpoints')
-    .addTag('E-Learning', 'E-Learning module endpoints')
-    .addTag('Events', 'Event management endpoints')
-    .addTag('Calendar', 'Calendar endpoints')
-    .addTag('Notifications', 'Notification endpoints')
-    .addTag('Messages', 'Messaging endpoints')
-    .addTag('Analytics', 'Analytics endpoints')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
 
-  const port = configService.get<number>('app.port') || 3000;
+  const port = process.env.PORT || 3000;
   await app.listen(port);
-
-  console.log(`
-    🚀 School Management System API is running!
-    📍 Local: http://localhost:${port}/${apiPrefix}
-    📚 Swagger Docs: http://localhost:${port}/docs
-    🌍 Environment: ${configService.get<string>('app.nodeEnv') || 'development'}
-  `);
+  console.log(`Application is running on: http://localhost:${port}`);
+  console.log(`Swagger documentation: http://localhost:${port}/docs`);
 }
-
 bootstrap();

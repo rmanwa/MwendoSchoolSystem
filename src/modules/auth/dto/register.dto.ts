@@ -8,11 +8,31 @@ import {
   IsOptional,
   IsPhoneNumber,
   IsDateString,
-  IsUUID, // <--- ADDED THIS IMPORT
+  IsUUID,
 } from 'class-validator';
 import { Role } from '../../../common/constants/roles.constant';
 
 export class RegisterDto {
+  // School selection: BOTH are optional
+  @ApiPropertyOptional({
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: 'ID of existing school to join (optional)',
+  })
+  @IsOptional()
+  @IsUUID()
+  schoolId?: string;
+
+  @ApiPropertyOptional({
+    example: 'MwendoSchool Academy',
+    description: 'Name of new school to create (optional)',
+  })
+  @IsOptional()
+  @IsString()
+  @MinLength(3)
+  @MaxLength(255)
+  schoolName?: string;
+
+  // User details
   @ApiProperty({ example: 'john.doe@example.com' })
   @IsEmail()
   email: string;
@@ -51,6 +71,7 @@ export class RegisterDto {
   @IsEnum(Role)
   role?: Role;
 
+  // Role-specific fields
   @ApiPropertyOptional({ example: 'ADM2024001' })
   @IsOptional()
   @IsString()
@@ -71,13 +92,11 @@ export class RegisterDto {
   @IsString()
   gender?: string;
 
-  @ApiPropertyOptional({ enum: ['father', 'mother', 'guardian', 'other'], example: 'father' })
+  @ApiPropertyOptional({
+    enum: ['father', 'mother', 'guardian', 'other'],
+    example: 'father',
+  })
   @IsOptional()
   @IsString()
   relationship?: string;
-
-  @ApiPropertyOptional({ example: 'uuid-of-school' })
-  @IsOptional()
-  @IsUUID()
-  schoolId?: string;
 }
