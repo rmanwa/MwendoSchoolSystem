@@ -6,9 +6,11 @@ import configs from './config';
 import { AuthModule } from './modules/auth/auth.module';
 import { TenantMiddleware } from './common/middleware/tenant.middleware';
 import { School } from './database/entities/school.entity';
+import { ClassesModule } from './modules/classes/classes.module';
 
 @Module({
   imports: [
+    ClassesModule,
     // 1. Load Environment Variables
     ConfigModule.forRoot({
       isGlobal: true,
@@ -51,9 +53,9 @@ export class AppModule implements NestModule {
       .apply(TenantMiddleware)
       .exclude(
         'auth/(.*)', // Exclude login/register
-        'health',     // Exclude health checks
-        '/'           // Exclude root
-      ) 
+        'health', // Exclude health checks
+        '/', // Exclude root
+      )
       .forRoutes('*'); // Apply to all other routes
   }
 }
