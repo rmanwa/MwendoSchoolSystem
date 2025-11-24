@@ -18,12 +18,24 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
+    console.log('JWT Strategy - Validating payload:', payload);
+    
     const user = await this.authService.validateUser(payload.sub);
     
     if (!user) {
-      throw new UnauthorizedException();
+      console.error('JWT Strategy - User not found');
+      throw new UnauthorizedException('User not found');
     }
 
-    return { id: user.id, email: user.email, role: user.role };
+    console.log('JWT Strategy - User validated successfully');
+
+    // ✅ CRITICAL: Return schoolId so it's available in req.user
+    return { 
+      id: user.id, 
+      email: user.email, 
+      role: user.role,
+      schoolId: payload.schoolId || user.schoolId,  // ← This is the fix!
+      sub: payload.sub
+    };
   }
 }

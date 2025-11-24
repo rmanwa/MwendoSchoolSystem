@@ -13,7 +13,7 @@ import {
 import { Role } from '../../../common/constants/roles.constant';
 
 export class RegisterDto {
-  // School selection: BOTH are optional
+  // School selection
   @ApiPropertyOptional({
     example: '123e4567-e89b-12d3-a456-426614174000',
     description: 'ID of existing school to join (optional)',
@@ -71,6 +71,24 @@ export class RegisterDto {
   @IsEnum(Role)
   role?: Role;
 
+  // --- CRITICAL FIX START: Add these missing fields ---
+  @ApiPropertyOptional({ 
+    example: '123 Moi Avenue, Nairobi', 
+    description: 'Physical address' 
+  })
+  @IsOptional()
+  @IsString()
+  address?: string;
+
+  @ApiPropertyOptional({ 
+    example: 'active', 
+    enum: ['active', 'inactive', 'pending'] 
+  })
+  @IsOptional()
+  @IsString()
+  status?: string;
+  // --- CRITICAL FIX END ---
+
   // Role-specific fields
   @ApiPropertyOptional({ example: 'ADM2024001' })
   @IsOptional()
@@ -85,7 +103,7 @@ export class RegisterDto {
   @ApiPropertyOptional({ example: '2010-01-01' })
   @IsOptional()
   @IsDateString()
-  dateOfBirth?: Date;
+  dateOfBirth?: string; // Use string for better JSON compatibility
 
   @ApiPropertyOptional({ enum: ['male', 'female', 'other'], example: 'male' })
   @IsOptional()

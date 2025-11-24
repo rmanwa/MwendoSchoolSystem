@@ -8,6 +8,7 @@ import {
   IsUUID,
   MinLength,
   MaxLength,
+  isDateString,
 } from 'class-validator';
 
 export class CreateStudentDto {
@@ -42,6 +43,10 @@ export class CreateStudentDto {
   @ApiProperty({ example: '2008-05-15' })
   @IsDateString()
   dateOfBirth: string;
+
+  @ApiProperty({ example: '2025-01-15' })
+  @IsDateString()
+  admissionDate: string;
 
   @ApiProperty({ enum: ['male', 'female', 'other'], example: 'male' })
   @IsEnum(['male', 'female', 'other'])
