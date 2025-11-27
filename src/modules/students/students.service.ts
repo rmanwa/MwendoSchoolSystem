@@ -12,6 +12,9 @@ import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { QueryStudentDto } from './dto/query-student.dto';
 import { Role } from '../../common/constants/roles.constant';
+import csvParser from 'csv-parser';
+import { Readable } from 'stream';
+import { Class } from 'src/database/entities';
 
 @Injectable()
 export class StudentsService {
@@ -20,6 +23,8 @@ export class StudentsService {
     private readonly studentRepository: Repository<Student>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(Class)
+    private readonly classRepository: Repository<Class>,
   ) {}
 
   async create(createStudentDto: CreateStudentDto, schoolId: string) {
@@ -229,5 +234,80 @@ export class StudentsService {
     return {
       message: 'Student deleted successfully',
     };
+  }
+  /**
+   * Import students from CSV file
+   */
+  async importFromCSV(file: Express.Multer.File, schoolId: string) {
+    const results: any[] = [];
+    
+    // Parse CSV
+    const stream = Readable.from(file.buffer);
+    
+    return new Promise((resolve, reject) => {
+      stream
+        .pipe(csvParser())
+        .on('data', (row: any) => results.push(row))
+        .on('end', async () => {
+          const imported: any[] = [];
+          const failed: any[] = [];
+          
+          for (const [index, row] of results.entries()) {
+            try {
+              // Find class by name if className provided
+              let classId = row.classId;
+              if (row.className && !classId) {
+                const classEntity = await this.classRepository.findOne({
+                  where: { name: row.className, schoolId },
+                });
+                classId = classEntity?.id;
+              }
+              
+              // Create student
+              const studentDto: CreateStudentDto = {
+                email: row.email,
+                admissionNumber: row.admissionNumber,
+                firstName: row.firstName,
+                lastName: row.lastName,
+                middleName: row.middleName || undefined,
+                dateOfBirth: row.dateOfBirth,
+                gender: row.gender,
+                phone: row.phone || undefined,
+                address: row.address || undefined,
+                admissionDate: row.admissionDate,
+                classId: classId || undefined,
+                status: row.status || 'active',
+                password: row.password || 'Student123',
+              };
+              
+              const student = await this.create(studentDto, schoolId);
+              
+              imported.push({
+                row: index + 2, // +2 for header and 0-indexing
+                admissionNumber: row.admissionNumber,
+                name: `${row.firstName} ${row.lastName}`,
+                status: 'success',
+              });
+              
+            } catch (error: any) {
+              failed.push({
+                row: index + 2,
+                admissionNumber: row.admissionNumber || 'N/A',
+                name: `${row.firstName || ''} ${row.lastName || ''}`,
+                error: error.message,
+              });
+            }
+          }
+          
+          resolve({
+            total: results.length,
+            imported: imported.length,
+            failed: failed.length,
+            successList: imported,
+            errorList: failed,
+          });
+        })
+        .on('error', reject);
+    });
   }
 }

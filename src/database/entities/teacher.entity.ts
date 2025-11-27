@@ -11,7 +11,6 @@ import {
 import { School } from './school.entity';
 import { User } from './user.entity';
 
-
 @Entity('teachers')
 export class Teacher {
   @PrimaryGeneratedColumn('uuid')
