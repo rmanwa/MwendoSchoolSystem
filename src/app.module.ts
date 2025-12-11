@@ -8,10 +8,12 @@ import { TenantMiddleware } from './common/middleware/tenant.middleware';
 import { School } from './database/entities/school.entity';
 import { ClassesModule } from './modules/classes/classes.module';
 import { TeachersModule } from './modules/teachers/teachers.module';
+import { SubjectsModule } from './modules/subjects/subjects.module';
 @Module({
   imports: [
     ClassesModule,
     TeachersModule,
+    SubjectsModule,
     // 1. Load Environment Variables
     ConfigModule.forRoot({
       isGlobal: true,
