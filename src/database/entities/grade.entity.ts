@@ -6,19 +6,17 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
-  Unique,
   Index,
+  Unique,
 } from 'typeorm';
 import { School } from './school.entity';
+import { Exam } from './exam.entity';
 import { Student } from './student.entity';
-import { Subject } from './subject.entity';
-import { Class } from './class.entity';
-import { Teacher } from './teacher.entity';
-import { AcademicYear } from './academic-year.entity';
-import { Term } from './term.entity';
 
 @Entity('grades')
-@Unique(['studentId', 'subjectId', 'termId', 'examType'])
+@Unique(['examId', 'studentId']) // One grade per student per exam
+@Index(['schoolId', 'studentId'])
+@Index(['schoolId', 'examId'])
 export class Grade {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -31,73 +29,73 @@ export class Grade {
   @JoinColumn({ name: 'school_id' })
   school: School;
 
-  @Column({ name: 'student_id' })
+  @Column({ name: 'exam_id', type: 'uuid' })
+  examId: string;
+
+  @ManyToOne(() => Exam, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'exam_id' })
+  exam: Exam;
+
+  @Column({ name: 'student_id', type: 'uuid' })
   studentId: string;
 
-  @ManyToOne(() => Student)
+  @ManyToOne(() => Student, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'student_id' })
   student: Student;
 
-  @Column({ name: 'subject_id' })
-  subjectId: string;
-
-  @ManyToOne(() => Subject)
-  @JoinColumn({ name: 'subject_id' })
-  subject: Subject;
-
-  @Column({ name: 'class_id' })
-  classId: string;
-
-  @ManyToOne(() => Class)
-  @JoinColumn({ name: 'class_id' })
-  class: Class;
-
-  @Column({ name: 'academic_year_id' })
-  academicYearId: string;
-
-  @ManyToOne(() => AcademicYear)
-  @JoinColumn({ name: 'academic_year_id' })
-  academicYear: AcademicYear;
-
-  @Column({ name: 'term_id' })
-  termId: string;
-
-  @ManyToOne(() => Term)
-  @JoinColumn({ name: 'term_id' })
-  term: Term;
-
-  @Column({
-    name: 'exam_type',
-    type: 'enum',
-    enum: ['cat', 'mid-term', 'final', 'assignment', 'project', 'practical'],
-    default: 'final',
-  })
-  examType: string;
-
-  @Column({ name: 'marks_obtained', type: 'decimal', precision: 5, scale: 2 })
+  // Raw score obtained
+  @Column({ name: 'marks_obtained', type: 'decimal', precision: 6, scale: 2 })
   marksObtained: number;
 
-  @Column({ name: 'total_marks', type: 'int', default: 100 })
-  totalMarks: number;
-
+  // Percentage score (calculated)
   @Column({ name: 'percentage', type: 'decimal', precision: 5, scale: 2, nullable: true })
   percentage: number;
 
-  @Column({ name: 'grade_letter', nullable: true })
-  gradeLetter: string;
+  // Letter/Number grade (auto-calculated based on curriculum)
+  @Column({ name: 'letter_grade', length: 10, nullable: true })
+  letterGrade: string; // A, B+, EE, ME, 7, etc.
 
-  @Column({ name: 'grade_points', type: 'decimal', precision: 3, scale: 2, nullable: true })
+  // Grade points (for GPA calculation)
+  @Column({ name: 'grade_points', type: 'decimal', precision: 4, scale: 2, nullable: true })
   gradePoints: number;
 
+  // CBC Competency Level (1-7)
+  @Column({ name: 'competency_level', type: 'int', nullable: true })
+  competencyLevel: number;
+
+  // CBC Rubric Assessment
+  @Column({ name: 'cbc_level', length: 5, nullable: true })
+  cbcLevel: string; // EE, ME, AE, BE
+
+  // Rank in class (calculated)
+  @Column({ name: 'class_rank', type: 'int', nullable: true })
+  classRank: number;
+
+  // Remarks/Comments
   @Column({ type: 'text', nullable: true })
   remarks: string;
 
-  @Column({ name: 'entered_by' })
-  enteredById: string;
+  // Teacher's comment
+  @Column({ name: 'teacher_comment', type: 'text', nullable: true })
+  teacherComment: string;
 
-  @ManyToOne(() => Teacher)
-  @JoinColumn({ name: 'entered_by' })
-  enteredBy: Teacher;
+  // Was student absent?
+  @Column({ name: 'is_absent', default: false })
+  isAbsent: boolean;
+
+  // Special cases
+  @Column({ name: 'is_exempted', default: false })
+  isExempted: boolean;
+
+  @Column({ name: 'exemption_reason', type: 'text', nullable: true })
+  exemptionReason: string;
+
+  // Who entered the grade
+  @Column({ name: 'graded_by', type: 'uuid', nullable: true })
+  gradedBy: string;
+
+  @Column({ name: 'graded_at', type: 'timestamp', nullable: true })
+  gradedAt: Date;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

@@ -24,3 +24,4 @@ export * from './course-progress.entity';
 export * from './event.entity';
 export * from './notification.entity';
 export * from './message.entity';
+export * from './class-subject.entity';

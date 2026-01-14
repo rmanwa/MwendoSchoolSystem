@@ -39,7 +39,7 @@ export class SubjectsController {
   }
 
   @Get()
-  @Roles('admin', 'teacher', 'student', 'parent')
+  @Roles('super_admin', 'admin', 'teacher', 'student', 'parent')
   @ApiOperation({ summary: 'Get all subjects for the school' })
   @ApiQuery({ name: 'curriculum', required: false, enum: Curriculum, description: 'Filter by curriculum' })
   @ApiResponse({ status: 200, description: 'List of subjects' })

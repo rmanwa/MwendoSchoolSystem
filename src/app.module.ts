@@ -9,11 +9,23 @@ import { School } from './database/entities/school.entity';
 import { ClassesModule } from './modules/classes/classes.module';
 import { TeachersModule } from './modules/teachers/teachers.module';
 import { SubjectsModule } from './modules/subjects/subjects.module';
+import { SchoolsModule } from './modules/schools/schools.module';
+import { ClassSubjectsModule } from './modules/class-subjects-module';
+import { AcademicYearsModule } from './modules/academic-years-module';
+import { AttendanceModule } from './modules/attendance-module';
+import { ExamsModule } from './modules/exams-module';
+import { FeesModule } from './modules/fees';
 @Module({
   imports: [
     ClassesModule,
     TeachersModule,
     SubjectsModule,
+    SchoolsModule,
+    ClassSubjectsModule,
+    AcademicYearsModule,
+    AttendanceModule,
+    ExamsModule,
+    FeesModule,
     // 1. Load Environment Variables
     ConfigModule.forRoot({
       isGlobal: true,
