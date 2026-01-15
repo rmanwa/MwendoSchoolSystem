@@ -559,17 +559,23 @@ export class FeesService {
         feeStructureId: fee.id,
         name: fee.name,
         category: fee.category,
-        amount: fee.amount,
+        amount: parseFloat(String(fee.amount)) || 0,
         quantity: 1,
-        total: fee.amount,
+        total: parseFloat(String(fee.amount)) || 0,
         isGovernmentFee: fee.isGovernmentFee,
       }));
     }
 
-    const subtotal = items.reduce((sum: number, item: any) => sum + (item.total || item.amount * (item.quantity || 1)), 0);
+    const subtotal = items.reduce((sum: number, item: any) => {
+      const itemTotal = parseFloat(String(item.total)) || parseFloat(String(item.amount)) * (item.quantity || 1);
+      return sum + itemTotal;
+    }, 0);
     const governmentSubsidy = items
       .filter((item: any) => item.isGovernmentFee)
-      .reduce((sum: number, item: any) => sum + (item.total || item.amount), 0);
+      .reduce((sum: number, item: any) => {
+        const itemTotal = parseFloat(String(item.total)) || parseFloat(String(item.amount));
+        return sum + itemTotal;
+      }, 0);
     const discountAmount = dto.discountAmount || 0;
     const bursaryAmount = dto.bursaryAmount || 0;
     const totalAmount = subtotal - governmentSubsidy - discountAmount - bursaryAmount;
