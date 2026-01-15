@@ -6,7 +6,6 @@ import {
   IsNumber,
   IsBoolean,
   IsArray,
-  IsDate,
   IsDateString,
   Min,
   Max,
@@ -17,88 +16,25 @@ import {
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-// ==================== ENUMS ====================
-// Note: These must match the enums in the entity files
+// Import enums from dedicated file
+// NOTE: fees.enums.ts is in parent folder (src/modules/fees/)
+// This DTO file is in src/modules/fees/dto/
+import {
+  FeeCategory,
+  FeeFrequency,
+  InvoiceStatus,
+  PaymentMethod,
+  PaymentStatus,
+} from '../fees.enums';
 
-export enum FeeCategory {
-  TUITION = 'tuition',
-  EXAMINATION = 'examination',
-  BOOKS_STATIONERY = 'books_stationery',
-  BOARDING = 'boarding',
-  MEALS = 'meals',
-  LUNCH = 'lunch',
-  TRANSPORT = 'transport',
-  ACTIVITY = 'activity',
-  SPORTS = 'sports',
-  CLUBS = 'clubs',
-  DEVELOPMENT = 'development',
-  MAINTENANCE = 'maintenance',
-  INFRASTRUCTURE = 'infrastructure',
-  ADMISSION = 'admission',
-  REGISTRATION = 'registration',
-  CAUTION = 'caution',
-  UNIFORM = 'uniform',
-  MEDICAL = 'medical',
-  INSURANCE = 'insurance',
-  ELECTRICITY = 'electricity',
-  COMPUTER_LAB = 'computer_lab',
-  LIBRARY = 'library',
-  CAPITATION = 'capitation',
-  GOK_SUBSIDY = 'gok_subsidy',
-  OTHER = 'other',
-}
-
-export enum FeeFrequency {
-  ONE_TIME = 'one_time',
-  PER_TERM = 'per_term',
-  PER_YEAR = 'per_year',
-  PER_MONTH = 'per_month',
-}
-
-export enum PaymentMethod {
-  // Mobile Money (most popular in Kenya)
-  MPESA = 'mpesa',
-  AIRTEL_MONEY = 'airtel_money',
-  T_KASH = 't_kash',
-  
-  // Bank payments
-  BANK_TRANSFER = 'bank_transfer',
-  BANK_DEPOSIT = 'bank_deposit',
-  CHEQUE = 'cheque',
-  RTGS = 'rtgs',
-  EFT = 'eft',
-  
-  // Other
-  CASH = 'cash',
-  CARD = 'card',
-  MOBILE_MONEY = 'mobile_money',
-  
-  // External funding
-  BURSARY = 'bursary',
-  SCHOLARSHIP = 'scholarship',
-  GOVERNMENT = 'government',
-  SPONSOR = 'sponsor',
-  
-  OTHER = 'other',
-}
-
-export enum PaymentStatus {
-  PENDING = 'pending',
-  PROCESSING = 'processing',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  REVERSED = 'reversed',
-  REFUNDED = 'refunded',
-}
-
-export enum InvoiceStatus {
-  DRAFT = 'draft',
-  SENT = 'sent',
-  PARTIALLY_PAID = 'partially_paid',
-  PAID = 'paid',
-  OVERDUE = 'overdue',
-  CANCELLED = 'cancelled',
-}
+// Re-export enums for backward compatibility
+export {
+  FeeCategory,
+  FeeFrequency,
+  InvoiceStatus,
+  PaymentMethod,
+  PaymentStatus,
+} from '../fees.enums';
 
 // ==================== FEE STRUCTURE DTOs ====================
 
@@ -269,10 +205,10 @@ export class FeeStructureQueryDto {
 }
 
 export class PublicSchoolFeeTemplateDto {
-  @ApiProperty({ 
+  @ApiProperty({
     enum: ['national', 'extra_county_a', 'extra_county_b', 'county', 'sub_county', 'special_needs'],
     example: 'national',
-    description: 'School category for fee template'
+    description: 'School category for fee template',
   })
   @IsString()
   schoolCategory: string;
@@ -280,7 +216,7 @@ export class PublicSchoolFeeTemplateDto {
   @ApiProperty({
     enum: ['day', 'boarding'],
     example: 'boarding',
-    description: 'School type'
+    description: 'School type',
   })
   @IsString()
   schoolType: string;
@@ -488,7 +424,6 @@ export class CreatePaymentDto {
   @IsString()
   transactionReference?: string;
 
-  // M-Pesa fields
   @ApiPropertyOptional({ example: 'QKJ3M7YT8R' })
   @IsOptional()
   @IsString()
@@ -499,7 +434,6 @@ export class CreatePaymentDto {
   @IsString()
   mpesaPhoneNumber?: string;
 
-  // Bank fields
   @ApiPropertyOptional({ example: 'Kenya Commercial Bank' })
   @IsOptional()
   @IsString()
@@ -525,7 +459,6 @@ export class CreatePaymentDto {
   @IsDateString()
   chequeDate?: string;
 
-  // Payer info
   @ApiPropertyOptional({ example: 'John Doe' })
   @IsOptional()
   @IsString()
@@ -546,7 +479,6 @@ export class CreatePaymentDto {
   @IsString()
   description?: string;
 
-  // Vote allocation
   @ApiPropertyOptional({ description: 'Vote head allocation' })
   @IsOptional()
   @IsArray()
@@ -577,10 +509,10 @@ export class PaymentQueryDto {
   @IsEnum(PaymentMethod)
   method?: PaymentMethod;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ enum: PaymentStatus })
   @IsOptional()
-  @IsString()
-  status?: string;
+  @IsEnum(PaymentStatus)
+  status?: PaymentStatus;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -667,4 +599,41 @@ export class MpesaSTKPushDto {
   @IsOptional()
   @IsUUID()
   invoiceId?: string;
+}
+
+// ==================== REPORT DTOs ====================
+
+export class DefaultersQueryDto {
+  @ApiPropertyOptional({ description: 'Filter by class ID' })
+  @IsOptional()
+  @IsUUID()
+  classId?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by term ID' })
+  @IsOptional()
+  @IsUUID()
+  termId?: string;
+
+  @ApiPropertyOptional({ description: 'Minimum balance threshold' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  minBalance?: number;
+}
+
+export class DailyReportDto {
+  @ApiProperty({ example: '2025-01-15', description: 'Date in YYYY-MM-DD format' })
+  @IsString()
+  date: string;
+}
+
+export class DateRangeReportDto {
+  @ApiProperty({ example: '2025-01-01', description: 'Start date in YYYY-MM-DD format' })
+  @IsDateString()
+  startDate: string;
+
+  @ApiProperty({ example: '2025-01-31', description: 'End date in YYYY-MM-DD format' })
+  @IsDateString()
+  endDate: string;
 }
