@@ -16,6 +16,17 @@ import {
   AttendanceQueryDto,
 } from './dto/attendance.dto';
 
+/**
+ * ATTENDANCE SERVICE - PRODUCTION READY
+ * =====================================
+ * 
+ * Fixes applied:
+ * 1. ✅ Fixed invalid order syntax (can't order by nested relation directly)
+ * 2. ✅ Fixed student.user relation loading for name access
+ * 3. ✅ Added proper relation loading throughout
+ * 4. ✅ Added helper method for consistent student name formatting
+ */
+
 @Injectable()
 export class AttendanceService {
   constructor(
@@ -24,6 +35,19 @@ export class AttendanceService {
     @InjectRepository(Student)
     private readonly studentRepository: Repository<Student>,
   ) {}
+
+  // ==================== HELPER METHODS ====================
+
+  /**
+   * Format student name safely from student entity with user relation
+   */
+  private formatStudentName(student: Student | null | undefined): string {
+    if (!student) return 'Unknown';
+    // Student entity has eager: true on user relation, but let's be safe
+    const user = (student as any).user;
+    if (!user) return student.admissionNumber || 'Unknown';
+    return `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown';
+  }
 
   // ==================== SINGLE ATTENDANCE ====================
 
@@ -70,7 +94,7 @@ export class AttendanceService {
   async findOne(id: string, schoolId: string): Promise<Attendance> {
     const attendance = await this.attendanceRepository.findOne({
       where: { id, schoolId },
-      relations: ['student', 'class'],
+      relations: ['student', 'student.user', 'class'],
     });
 
     if (!attendance) {
@@ -188,16 +212,19 @@ export class AttendanceService {
    * Get attendance for a class on a specific date
    */
   async getClassAttendance(classId: string, date: string, schoolId: string): Promise<any> {
+    // FIX #1: Load student.user relation and remove invalid order
     const records = await this.attendanceRepository.find({
       where: { classId, date: new Date(date), schoolId },
-      relations: ['student'],
-      order: { student: { user: 'ASC' } },
+      relations: ['student', 'student.user'],
+      order: { createdAt: 'ASC' }, // Order by creation time instead
     });
 
     // Get all students in class to show unmarked ones
+    // FIX #2: Load user relation for student names
     const allStudents = await this.studentRepository.find({
       where: { classId, schoolId, status: 'active' },
-      order: { user: 'ASC' },
+      relations: ['user'],
+      order: { createdAt: 'ASC' },
     });
 
     const markedIds = records.map(r => r.studentId);
@@ -213,12 +240,24 @@ export class AttendanceService {
       unmarked: unmarked.length,
     };
 
+    // FIX #3: Format response with proper student names
+    const formattedRecords = records.map(r => ({
+      ...r,
+      studentName: this.formatStudentName(r.student),
+    }));
+
+    const formattedUnmarked = unmarked.map(s => ({
+      id: s.id,
+      admissionNumber: s.admissionNumber,
+      studentName: this.formatStudentName(s),
+    }));
+
     return {
       date,
       classId,
       summary,
-      records,
-      unmarkedStudents: unmarked,
+      records: formattedRecords,
+      unmarkedStudents: formattedUnmarked,
     };
   }
 
@@ -242,15 +281,18 @@ export class AttendanceService {
     });
 
     const total = records.length;
+    const presentCount = records.filter(r => r.status === AttendanceStatus.PRESENT).length;
+    const lateCount = records.filter(r => r.status === AttendanceStatus.LATE).length;
+    
     const summary = {
       total,
-      present: records.filter(r => r.status === AttendanceStatus.PRESENT).length,
+      present: presentCount,
       absent: records.filter(r => r.status === AttendanceStatus.ABSENT).length,
-      late: records.filter(r => r.status === AttendanceStatus.LATE).length,
+      late: lateCount,
       excused: records.filter(r => r.status === AttendanceStatus.EXCUSED).length,
       halfDay: records.filter(r => r.status === AttendanceStatus.HALF_DAY).length,
       attendanceRate: total > 0 
-        ? Math.round((records.filter(r => r.status === AttendanceStatus.PRESENT || r.status === AttendanceStatus.LATE).length / total) * 100) 
+        ? Math.round(((presentCount + lateCount) / total) * 100) 
         : 0,
     };
 
@@ -274,7 +316,7 @@ export class AttendanceService {
 
     return this.attendanceRepository.find({
       where,
-      relations: ['student', 'class'],
+      relations: ['student', 'student.user', 'class'],
       order: { date: 'DESC', createdAt: 'DESC' },
       take: 500, // Limit for performance
     });
@@ -425,6 +467,8 @@ export class AttendanceService {
     });
 
     const markedStudents = new Set(records.map(r => r.studentId)).size;
+    const presentCount = records.filter(r => r.status === AttendanceStatus.PRESENT).length;
+    const lateCount = records.filter(r => r.status === AttendanceStatus.LATE).length;
 
     return {
       date: today.toISOString().split('T')[0],
@@ -432,13 +476,13 @@ export class AttendanceService {
         totalStudents,
         markedStudents,
         unmarkedStudents: totalStudents - markedStudents,
-        present: records.filter(r => r.status === AttendanceStatus.PRESENT).length,
+        present: presentCount,
         absent: records.filter(r => r.status === AttendanceStatus.ABSENT).length,
-        late: records.filter(r => r.status === AttendanceStatus.LATE).length,
+        late: lateCount,
         excused: records.filter(r => r.status === AttendanceStatus.EXCUSED).length,
       },
       attendanceRate: markedStudents > 0 
-        ? Math.round((records.filter(r => r.status === AttendanceStatus.PRESENT || r.status === AttendanceStatus.LATE).length / markedStudents) * 100)
+        ? Math.round(((presentCount + lateCount) / markedStudents) * 100)
         : 0,
     };
   }
@@ -455,16 +499,18 @@ export class AttendanceService {
 
     if (classId) where.classId = classId;
 
+    // FIX #4: Load student.user relation for name access
     const records = await this.attendanceRepository.find({
       where,
-      relations: ['student', 'class'],
+      relations: ['student', 'student.user', 'class'],
     });
 
     return records.map(r => ({
       studentId: r.studentId,
-      studentName: r.student?.user 
-        ? `${r.student.user.firstName} ${r.student.user.lastName}`
-        : 'Unknown',
+      admissionNumber: r.student?.admissionNumber,
+      studentName: this.formatStudentName(r.student),
+      className: (r.class as any)?.name || 'Unknown',
+      status: r.status,
       reason: r.reason,
     }));
   }

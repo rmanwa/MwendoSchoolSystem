@@ -25,3 +25,4 @@ export * from './event.entity';
 export * from './notification.entity';
 export * from './message.entity';
 export * from './class-subject.entity';
+export * from './report-card.entity';

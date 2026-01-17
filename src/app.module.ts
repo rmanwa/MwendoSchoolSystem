@@ -15,6 +15,7 @@ import { AcademicYearsModule } from './modules/academic-years-module';
 import { AttendanceModule } from './modules/attendance-module';
 import { ExamsModule } from './modules/exams-module';
 import { FeesModule } from './modules/fees';
+import { ReportCardsModule } from './modules/report-cards/report-cards.module';
 @Module({
   imports: [
     ClassesModule,
@@ -26,6 +27,7 @@ import { FeesModule } from './modules/fees';
     AttendanceModule,
     ExamsModule,
     FeesModule,
+    ReportCardsModule,
     // 1. Load Environment Variables
     ConfigModule.forRoot({
       isGlobal: true,
